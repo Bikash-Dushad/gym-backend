@@ -170,3 +170,23 @@ export const getListOfUsersService = async (payload) => {
   };
   return data;
 };
+
+export const getUserDetailsService = async (userId) => {
+  if (!userId) {
+    throw new Error("UserId is required");
+  }
+  const user = await db
+    .select()
+    .from(users)
+    .leftJoin(membership, eq(users.id, membership.user))
+    .leftJoin(
+      membershipPlans,
+      eq(membership.membershipPlan, membershipPlans.id),
+    )
+    .where(eq(users.id, userId));
+  if (user.length === 0) {
+    throw new Error("User not found");
+  }
+
+  return user[0];
+};

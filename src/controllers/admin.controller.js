@@ -9,6 +9,7 @@ import {
 import {
   createUserService,
   getListOfUsersService,
+  getUserDetailsService,
 } from "../services/user.service.js";
 import { handleError } from "../utils/error.handler.js";
 
@@ -44,6 +45,12 @@ export const adminLogin = async (req, res) => {
   try {
     const payload = req.body;
     const data = await adminLoginService(payload);
+    res.cookie("adminToken", data.token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 1000,
+    });
     return res.status(200).json({
       success: true,
       message: "Login successfull",
@@ -92,5 +99,19 @@ export const getListOfUsers = async (req, res) => {
     });
   } catch (error) {
     handleError(res, error, "getListOfUsers");
+  }
+};
+
+export const getUserDetails = async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    const data = await getUserDetailsService(userId);
+    return res.status(200).json({
+      success: true,
+      message: "User details fetched successfully",
+      data,
+    });
+  } catch (error) {
+    return handleError(res, error, "getUserDetails");
   }
 };

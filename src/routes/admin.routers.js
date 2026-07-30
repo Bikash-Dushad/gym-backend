@@ -5,6 +5,7 @@ import {
   createMembershipPlan,
   createUser,
   getListOfUsers,
+  getUserDetails,
   listOfMembershipPlans,
 } from "../controllers/admin.controller.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
@@ -25,3 +26,4 @@ adminRouter.get(
 );
 adminRouter.post("/create-user", authMiddleware, createUser);
 adminRouter.post("/get-list-of-users", authMiddleware, getListOfUsers);
+adminRouter.post("/get-user-details", authMiddleware, getUserDetails);
