@@ -1,0 +1,1 @@
+ALTER TABLE `membership` MODIFY COLUMN `weight` decimal(4,1) NOT NULL;

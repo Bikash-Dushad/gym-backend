@@ -29,7 +29,7 @@ export const membership = mysqlTable("membership", {
   isActive: boolean().default(true),
   isExpired: boolean().default(false),
   weight: decimal("weight", {
-    precision: 3,
+    precision: 4,
     scale: 1,
   }).notNull(),
   type: varchar("type", { length: 255 }), // gain, weightloss...

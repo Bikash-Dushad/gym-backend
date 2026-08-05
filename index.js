@@ -16,6 +16,14 @@ app.use(
     credentials: true,
   }),
 );
+
+app.get("/api/health", async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "Server is live"
+  })
+})
+
 routes.forEach(({ path, router }) => {
   app.use(`/api${path}`, router);
 });
@@ -24,7 +32,7 @@ async function startServer() {
   try {
     const connection = await pool.getConnection();
     console.log("✅ Database connected successfully");
-    connection.release(); // release it back to the pool
+    connection.release();
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);

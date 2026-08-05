@@ -1,6 +1,7 @@
 import {
   adminLoginService,
   createAdminService,
+  getAdminProfileService,
 } from "../services/admin.service.js";
 import {
   createMembershipPlanService,
@@ -113,5 +114,19 @@ export const getUserDetails = async (req, res) => {
     });
   } catch (error) {
     return handleError(res, error, "getUserDetails");
+  }
+};
+
+export const getAdminProfile = async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    const data = await getAdminProfileService(adminId);
+    return res.status(200).json({
+      success: true,
+      message: "Admin Profile fetched successfully",
+      data,
+    });
+  } catch (error) {
+    handleError(res, error, "getAdminProfile");
   }
 };

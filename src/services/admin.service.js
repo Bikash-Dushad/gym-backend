@@ -37,7 +37,6 @@ export const createAdminService = async (payload) => {
     phone,
   };
   return data;
-  console.log(data);
 };
 
 export const adminLoginService = async (payload) => {
@@ -71,6 +70,29 @@ export const adminLoginService = async (payload) => {
     token,
     name: existingAdmin[0].name,
     phone: existingAdmin[0].phone,
+  };
+  return data;
+};
+
+export const getAdminProfileService = async (adminId) => {
+  if (!adminId) {
+    throw new Error("Admin not found");
+  }
+  const adminProfile = await db
+    .select()
+    .from(admin)
+    .where(eq(admin.id, adminId));
+
+  if (!adminProfile) {
+    throw new Error("Admin not found");
+  }
+
+  const data = {
+    id: adminProfile[0].id,
+    name: adminProfile[0].name,
+    email: adminProfile[0].email,
+    avatar: adminProfile[0].avatar,
+    role: adminProfile[0].role || "Admin"
   };
   return data;
 };

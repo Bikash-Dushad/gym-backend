@@ -8,6 +8,13 @@
       "when": 1784442843262,
       "tag": "0000_short_proudstar",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1785937564206,
+      "tag": "0001_familiar_obadiah_stane",
+      "breakpoints": true
     }
   ]
 }

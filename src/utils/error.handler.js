@@ -5,23 +5,23 @@ export const handleError = (res, error, api) => {
       message: err.message,
     }));
 
-    return res.status(200).json({
+    return res.status(400).json({
+      success: false,
       message: "Validation error",
-      responseCode: 400,
       errors: validationErrors,
     });
-  } else if (error.name === "Error") {
-    console.log(error);
-    return res.status(200).json({
-      responseCode: 400,
+  }
+  if (error.name === "Error") {
+    console.log("Operational Error:", error);
+    return res.status(400).json({
+      success: false,
       message: error.message,
     });
   }
 
-  console.log(error);
-
+  console.log("Unhandled System Error:", error);
   return res.status(500).json({
-    responseCode: 500,
+    success: false,
     message: "server error",
     error: error.message,
   });

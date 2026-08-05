@@ -8,6 +8,7 @@ import { membership } from "../db/schema/membership.schema.js";
 import { membershipPlans } from "../db/schema/membershipPlans.schema.js";
 
 export const createUserService = async (payload) => {
+  console.log(payload);
   const {
     name,
     email,

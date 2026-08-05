@@ -1,8 +1,7 @@
 import jwt from "jsonwebtoken";
 
 export const authMiddleware = (req, res, next) => {
-  const token = req.header("Authorization")?.replace("Bearer ", "") || req.cookies.adminToken;
-
+  const token = req.cookies.adminToken || req.cookies.token;
   if (!token) {
     return res.status(401).json({ message: "No token, authorization denied" });
   }
