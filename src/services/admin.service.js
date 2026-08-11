@@ -1,11 +1,13 @@
 import { v7 as uuidv7 } from "uuid"; // Changed this line
 import { db } from "../db/index.js";
-import { eq, or, desc, count } from "drizzle-orm";
+import { eq, or, desc, count, gte, and, lte } from "drizzle-orm";
 import { admin } from "../db/schema/admin.schema.js";
 import { createAdminValidator } from "../validator/admin.validator.js";
 import { bufferToUuid, uuidToBuffer } from "../utils/uuid.handler.js";
 import bcrypt from "bcrypt";
 import { createToken } from "../utils/token.handler.js";
+import { users } from "../db/schema/users.schema.js";
+import { membership } from "../db/schema/membership.schema.js";
 
 export const createAdminService = async (payload) => {
   const { name, email, phone, password, avatar } = payload;
@@ -92,7 +94,57 @@ export const getAdminProfileService = async (adminId) => {
     name: adminProfile[0].name,
     email: adminProfile[0].email,
     avatar: adminProfile[0].avatar,
-    role: adminProfile[0].role || "Admin"
+    role: adminProfile[0].role || "Admin",
+  };
+  return data;
+};
+
+export const adminDashboardService = async (adminId) => {
+  if (!adminId) {
+    throw new Error("Admin Id is required");
+  }
+  const today = new Date();
+  const startDate = new Date();
+  startDate.setUTCHours(0, 0, 0, 0);
+
+  const endDate = new Date(startDate);
+  endDate.setUTCDate(endDate.getUTCDate() + 10);
+  endDate.setUTCHours(23, 59, 59, 999);
+
+  const [totalUsers, activeUsers, expiringSoon, newUsers] = await Promise.all([
+    db.select({ count: count() }).from(users),
+    db
+      .select({ count: count() })
+      .from(membership)
+      .where(eq(membership.isActive, true)),
+    db
+      .select({
+        id: membership.id,
+        expiryDate: membership.expiryDate,
+
+        user: {
+          id: users.id,
+          name: users.name,
+        },
+      })
+      .from(membership)
+      .innerJoin(users, eq(membership.user, users.id))
+      .where(
+        and(
+          gte(membership.expiryDate, startDate),
+          lte(membership.expiryDate, endDate),
+        ),
+      ),
+
+    db.select().from(users).orderBy(desc(users.createdAt)).limit(5),
+  ]);
+
+  const data = {
+    totalUsers: Number(totalUsers[0]?.count || 0),
+    activeUsers: Number(activeUsers[0]?.count || 0),
+    monthlyRevenew: 0,
+    expiringSoon,
+    newUsers,
   };
   return data;
 };

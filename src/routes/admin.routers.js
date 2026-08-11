@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  adminDashboard,
   adminLogin,
   createAdmin,
   createMembershipPlan,
@@ -29,3 +30,4 @@ adminRouter.post("/create-user", authMiddleware, createUser);
 adminRouter.post("/get-list-of-users", authMiddleware, getListOfUsers);
 adminRouter.post("/get-user-details", authMiddleware, getUserDetails);
 adminRouter.get("/get-admin-profile", authMiddleware, getAdminProfile);
+adminRouter.get("/admin-dashboard", authMiddleware, adminDashboard);

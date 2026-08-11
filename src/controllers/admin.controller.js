@@ -1,4 +1,5 @@
 import {
+  adminDashboardService,
   adminLoginService,
   createAdminService,
   getAdminProfileService,
@@ -128,5 +129,19 @@ export const getAdminProfile = async (req, res) => {
     });
   } catch (error) {
     handleError(res, error, "getAdminProfile");
+  }
+};
+
+export const adminDashboard = async (req, res) => {
+  try {
+    const adminId = req.user.id;
+    const data = await adminDashboardService(adminId);
+    return res.status(200).json({
+      success: true,
+      message: "Admin dashboard fetched sccessfully",
+      data,
+    });
+  } catch (error) {
+    handleError(res, error, "adminDashboard");
   }
 };

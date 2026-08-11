@@ -6,6 +6,7 @@ import { pool } from "./src/db/index.js";
 import { routes } from "./src/routes/index.js";
 const app = express();
 const PORT = process.env.PORT || 3000;
+import "./src/utils/bullmqWorker.js";
 
 app.use(cookieParser());
 app.use(express.json());
@@ -20,9 +21,9 @@ app.use(
 app.get("/api/health", async (req, res) => {
   return res.status(200).json({
     success: true,
-    message: "Server is live"
-  })
-})
+    message: "Server is live",
+  });
+});
 
 routes.forEach(({ path, router }) => {
   app.use(`/api${path}`, router);
