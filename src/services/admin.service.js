@@ -1,6 +1,6 @@
 import { v7 as uuidv7 } from "uuid"; // Changed this line
 import { db } from "../db/index.js";
-import { eq, or, desc, count, gte, and, lte } from "drizzle-orm";
+import { eq, or, desc, count, gte, and, lte, lt, sql } from "drizzle-orm";
 import { admin } from "../db/schema/admin.schema.js";
 import { createAdminValidator } from "../validator/admin.validator.js";
 import { bufferToUuid, uuidToBuffer } from "../utils/uuid.handler.js";
@@ -8,6 +8,7 @@ import bcrypt from "bcrypt";
 import { createToken } from "../utils/token.handler.js";
 import { users } from "../db/schema/users.schema.js";
 import { membership } from "../db/schema/membership.schema.js";
+import { membershipPlans } from "../db/schema/membershipPlans.schema.js";
 
 export const createAdminService = async (payload) => {
   const { name, email, phone, password, avatar } = payload;
@@ -108,10 +109,24 @@ export const adminDashboardService = async (adminId) => {
   startDate.setUTCHours(0, 0, 0, 0);
 
   const endDate = new Date(startDate);
-  endDate.setUTCDate(endDate.getUTCDate() + 10);
+  endDate.setUTCDate(endDate.getUTCDate() + 7);
   endDate.setUTCHours(23, 59, 59, 999);
 
-  const [totalUsers, activeUsers, expiringSoon, newUsers] = await Promise.all([
+  const startOfMonth = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1, 0, 0, 0, 0),
+  );
+  const startOfNextMonth = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 1, 0, 0, 0, 0),
+  );
+
+  const [
+    totalUsers,
+    activeUsers,
+    expiringSoon,
+    newUsers,
+    totalRevenew,
+    monthlyRevenew,
+  ] = await Promise.all([
     db.select({ count: count() }).from(users),
     db
       .select({ count: count() })
@@ -126,9 +141,18 @@ export const adminDashboardService = async (adminId) => {
           id: users.id,
           name: users.name,
         },
+        membershipPlan: {
+          id: membershipPlans.id,
+          name: membershipPlans.title,
+          price: membership.price,
+        },
       })
       .from(membership)
       .innerJoin(users, eq(membership.user, users.id))
+      .innerJoin(
+        membershipPlans,
+        eq(membership.membershipPlan, membershipPlans.id),
+      )
       .where(
         and(
           gte(membership.expiryDate, startDate),
@@ -137,12 +161,29 @@ export const adminDashboardService = async (adminId) => {
       ),
 
     db.select().from(users).orderBy(desc(users.createdAt)).limit(5),
+    db
+      .select({
+        totalRevenue: sql`COALESCE(SUM(${membership.price}), 0)`,
+      })
+      .from(membership),
+    db
+      .select({
+        monthlyRevenue: sql`COALESCE(SUM(${membership.price}), 0)`,
+      })
+      .from(membership)
+      .where(
+        and(
+          gte(membership.createdAt, startOfMonth),
+          lt(membership.createdAt, startOfNextMonth),
+        ),
+      ),
   ]);
 
   const data = {
     totalUsers: Number(totalUsers[0]?.count || 0),
     activeUsers: Number(activeUsers[0]?.count || 0),
-    monthlyRevenew: 0,
+    totalRevenew: Number(totalRevenew[0]?.totalRevenue || 0),
+    monthlyRevenew: Number(monthlyRevenew[0]?.monthlyRevenue || 0),
     expiringSoon,
     newUsers,
   };

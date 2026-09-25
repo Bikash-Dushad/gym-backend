@@ -6,7 +6,7 @@ import { pool } from "./src/db/index.js";
 import { routes } from "./src/routes/index.js";
 const app = express();
 const PORT = process.env.PORT || 3000;
-import "./src/utils/bullmqWorker.js";
+// import "./src/utils/bullmqWorker.js";
 
 app.use(cookieParser());
 app.use(express.json());

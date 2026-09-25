@@ -6,7 +6,7 @@ import { v7 as uuidv7 } from "uuid"; // Changed this line
 import { bufferToUuid, uuidToBuffer } from "../utils/uuid.handler.js";
 import { membership } from "../db/schema/membership.schema.js";
 import { membershipPlans } from "../db/schema/membershipPlans.schema.js";
-import { membershipQueue } from "../config/bullmq.js";
+// import { membershipQueue } from "../config/bullmq.js";
 
 export const createUserService = async (payload) => {
   const {
@@ -81,23 +81,23 @@ export const createUserService = async (payload) => {
 
   const delayMs = expiryDate.getTime() - Date.now();
 
-  const job = await membershipQueue.add(
-    "auto-expire-membership",
-    {
-      membershipId: membershipId,
-      scheduledExpiry: expiryDate,
-    },
-    {
-      delay: delayMs,
-      attempts: 3,
-      backoff: {
-        type: "exponential",
-        delay: 5000,
-      },
-      removeOnComplete: true,
-      removeOnFail: false,
-    },
-  );
+  // const job = await membershipQueue.add(
+  //   "auto-expire-membership",
+  //   {
+  //     membershipId: membershipId,
+  //     scheduledExpiry: expiryDate,
+  //   },
+  //   {
+  //     delay: delayMs,
+  //     attempts: 3,
+  //     backoff: {
+  //       type: "exponential",
+  //       delay: 5000,
+  //     },
+  //     removeOnComplete: true,
+  //     removeOnFail: false,
+  //   },
+  // );
 
   const data = {
     id: userId,
