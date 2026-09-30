@@ -9,6 +9,7 @@ import {
   getListOfUsers,
   getUserDetails,
   listOfMembershipPlans,
+  renewMembership,
 } from "../controllers/admin.controller.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
@@ -31,3 +32,4 @@ adminRouter.post("/get-list-of-users", authMiddleware, getListOfUsers);
 adminRouter.post("/get-user-details", authMiddleware, getUserDetails);
 adminRouter.get("/get-admin-profile", authMiddleware, getAdminProfile);
 adminRouter.get("/admin-dashboard", authMiddleware, adminDashboard);
+adminRouter.post("/renew-membership", authMiddleware, renewMembership)

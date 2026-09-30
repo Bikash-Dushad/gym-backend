@@ -12,6 +12,7 @@ import {
   createUserService,
   getListOfUsersService,
   getUserDetailsService,
+  renewMembershipService,
 } from "../services/user.service.js";
 import { handleError } from "../utils/error.handler.js";
 
@@ -143,5 +144,19 @@ export const adminDashboard = async (req, res) => {
     });
   } catch (error) {
     handleError(res, error, "adminDashboard");
+  }
+};
+
+export const renewMembership = async (req, res) => {
+  try {
+    const payload = req.body;
+    const data = await renewMembershipService(payload);
+    return res.status(200).json({
+      success: true,
+      message: "Membership renewed successfully",
+      data,
+    });
+  } catch (error) {
+    handleError(res, error, "renewMembership");
   }
 };

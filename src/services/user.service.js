@@ -198,7 +198,14 @@ export const getUserDetailsService = async (userId) => {
   const user = await db
     .select()
     .from(users)
-    .leftJoin(membership, eq(users.id, membership.user))
+    .leftJoin(
+      membership,
+      and(
+        eq(users.id, membership.user),
+        eq(membership.isActive, true),
+        eq(membership.isExpired, false),
+      ),
+    )
     .leftJoin(
       membershipPlans,
       eq(membership.membershipPlan, membershipPlans.id),
@@ -209,4 +216,61 @@ export const getUserDetailsService = async (userId) => {
   }
 
   return user[0];
+};
+
+export const renewMembershipService = async (payload) => {
+  const { userId, membershipPlanId, price, weight, type, trainerId } = payload;
+  if (!userId) {
+    throw new Error("UserId is required");
+  }
+  const [user, oldMembership] = await Promise.all([
+    db.select().from(users).where(eq(users.id, userId)),
+    db.select().from(membership).where(eq(membership.user, userId)),
+  ]);
+  if (user.length === 0) {
+    throw new Error("User not found");
+  }
+  if (oldMembership.length > 0) {
+    await db
+      .update(membership)
+      .set({
+        isActive: false,
+        isExpired: true,
+      })
+      .where(eq(membership.user, userId));
+  }
+  let finalMembershipPlanId =
+    membershipPlanId || oldMembership[0].membershipPlan;
+  const membershipPlan = await db
+    .select()
+    .from(membershipPlans)
+    .where(eq(membershipPlans.id, finalMembershipPlanId));
+
+  if (membershipPlan.length === 0) {
+    throw new Error("Please provide valid membership plan Id");
+  }
+  let membershipId = uuidv7();
+  let planValidity = membershipPlan[0].validity;
+  let expiryDate = new Date();
+  expiryDate.setUTCDate(expiryDate.getUTCDate() + Number(planValidity));
+
+  const newMembership = await db.insert(membership).values({
+    id: membershipId,
+    membershipPlan: finalMembershipPlanId,
+    user: userId,
+    price:
+      price !== undefined && price !== null && price !== ""
+        ? Number(price)
+        : membershipPlan[0].price,
+    trainer: trainerId ? trainerId : null,
+    expiryDate,
+    weight: weight ? Number(weight) : oldMembership[0].weight,
+    type: type || oldMembership[0].type,
+  });
+
+  const data = {
+    membershipId,
+    userId,
+  };
+  return data;
 };

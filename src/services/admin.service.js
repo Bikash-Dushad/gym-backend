@@ -157,6 +157,8 @@ export const adminDashboardService = async (adminId) => {
         and(
           gte(membership.expiryDate, startDate),
           lte(membership.expiryDate, endDate),
+          eq(membership.isActive, true),
+          eq(membership.isExpired, false),
         ),
       ),
 
