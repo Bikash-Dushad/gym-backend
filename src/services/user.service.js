@@ -109,6 +109,101 @@ export const createUserService = async (payload) => {
   return data;
 };
 
+export const updateUserService = async (payload) => {
+  const {
+    userId,
+    name,
+    bloodGroup,
+    age,
+    height,
+    weight,
+    type,
+    membershipPlanId,
+    price,
+    trainerId,
+  } = payload;
+
+  if (!userId) {
+    throw new Error("UserId is required");
+  }
+
+  const hasValue = (val) => val !== "" && val !== null && val !== undefined;
+
+  const [user, membershipPlan] = await Promise.all([
+    db.select().from(users).where(eq(users.id, userId)),
+    hasValue(membershipPlanId)
+      ? db
+          .select()
+          .from(membershipPlans)
+          .where(eq(membershipPlans.id, membershipPlanId))
+      : null,
+  ]);
+
+  if (!user || user.length === 0) {
+    throw new Error("User not found");
+  }
+
+  if (
+    hasValue(membershipPlanId) &&
+    (!membershipPlan || membershipPlan.length === 0)
+  ) {
+    throw new Error("Membership plan not found");
+  }
+
+  await db
+    .update(users)
+    .set({
+      name: hasValue(name) ? name : user[0].name,
+      bloodGroup: hasValue(bloodGroup) ? bloodGroup : user[0].bloodGroup,
+      age: hasValue(age) ? Number(age) : user[0].age,
+      height: hasValue(height) ? Number(height) : user[0].height,
+    })
+    .where(eq(users.id, userId));
+
+  const [updatedUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId));
+
+  // 3. Query existing user membership record
+  const existingMembership = await db
+    .select()
+    .from(membership)
+    .where(eq(membership.user, userId));
+
+  let updatedMembership = null;
+
+  if (existingMembership.length > 0) {
+    const currentMem = existingMembership[0];
+
+    await db
+      .update(membership)
+      .set({
+        membershipPlanId: hasValue(membershipPlanId)
+          ? membershipPlanId
+          : currentMem.membershipPlan,
+        price: hasValue(price) ? Number(price) : currentMem.price,
+        type: hasValue(type) ? type : currentMem.type,
+        weight: hasValue(weight) ? Number(weight) : currentMem.weight,
+        trainerId: hasValue(trainerId) ? trainerId : currentMem.trainer,
+        updatedAt: new Date(),
+      })
+      .where(eq(membership.user, userId));
+
+    const [fetchedMem] = await db
+      .select()
+      .from(membership)
+      .where(eq(membership.user, userId));
+
+    updatedMembership = fetchedMem;
+  }
+
+  return {
+    user: updatedUser,
+    membership: updatedMembership,
+  };
+};
+
 export const getListOfUsersService = async (payload) => {
   const { status = "all", name, page = 1, limit = 10 } = payload;
 

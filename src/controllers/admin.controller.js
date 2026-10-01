@@ -13,6 +13,7 @@ import {
   getListOfUsersService,
   getUserDetailsService,
   renewMembershipService,
+  updateUserService,
 } from "../services/user.service.js";
 import { handleError } from "../utils/error.handler.js";
 
@@ -88,6 +89,20 @@ export const createUser = async (req, res) => {
     });
   } catch (error) {
     return handleError(res, error, "createUser");
+  }
+};
+
+export const updateUser = async (req, res) => {
+  try {
+    const payload = req.body;
+    const data = await updateUserService(payload);
+    return res.status(200).json({
+      success: true,
+      message: "user updated successfully",
+      data,
+    });
+  } catch (error) {
+    handleError(res, error, "updateUser");
   }
 };
 

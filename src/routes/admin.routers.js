@@ -10,6 +10,7 @@ import {
   getUserDetails,
   listOfMembershipPlans,
   renewMembership,
+  updateUser,
 } from "../controllers/admin.controller.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
@@ -28,8 +29,9 @@ adminRouter.get(
   listOfMembershipPlans,
 );
 adminRouter.post("/create-user", authMiddleware, createUser);
+adminRouter.post("/update-user", authMiddleware, updateUser);
 adminRouter.post("/get-list-of-users", authMiddleware, getListOfUsers);
 adminRouter.post("/get-user-details", authMiddleware, getUserDetails);
 adminRouter.get("/get-admin-profile", authMiddleware, getAdminProfile);
 adminRouter.get("/admin-dashboard", authMiddleware, adminDashboard);
-adminRouter.post("/renew-membership", authMiddleware, renewMembership)
+adminRouter.post("/renew-membership", authMiddleware, renewMembership);

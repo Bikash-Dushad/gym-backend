@@ -94,6 +94,7 @@ export const getAdminProfileService = async (adminId) => {
     id: adminProfile[0].id,
     name: adminProfile[0].name,
     email: adminProfile[0].email,
+    phone: adminProfile[0].phone,
     avatar: adminProfile[0].avatar,
     role: adminProfile[0].role || "Admin",
   };
